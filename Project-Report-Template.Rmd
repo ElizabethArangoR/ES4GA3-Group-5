@@ -5,14 +5,14 @@ thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied S
 author:
 - name: Elizabeth Arango Ruda
   student_number: 400348183
-- name: Anastasiia Kalinina 
-  student_number: 400050085
-- name: Gabriella Morrone
-  student_number: 400085415
-- name: Jillian Walters
-  student_number: 400285085
-- name: Jocelyn Wu
-  student_number: 400051160
+- name: Grace Soo Ah Kim 
+  student_number: 400142650
+- name: Jamie Batten 
+  student_number: 001225861
+- name: Lucy Bohyun Kwak 
+  student_number: 400049887
+- name: Emerson Lalonde 
+  student_number: 4400185070
 subject: "ENVSOCTY 4GA3"
 abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
 keywords: "opioids, education, income, spatial analysis"
