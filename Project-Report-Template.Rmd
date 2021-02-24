@@ -3,8 +3,8 @@ title: "The Effects of Education and Income on Opioid Use in Kentucky"
 #subtitle: "A subtitle"
 thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
 author:
-- name: Zahra Akhtar
-  student_number: 400067162
+- name: Elizabeth Arango Ruda
+  student_number: 400348183
 - name: Anastasiia Kalinina 
   student_number: 400050085
 - name: Gabriella Morrone
