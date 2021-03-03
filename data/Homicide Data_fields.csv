@@ -1,0 +1,14 @@
+field,name
+FIELD_1,_id
+FIELD_2,Index_
+FIELD_3,Event_Unique_ID
+FIELD_4,Occurrence_year
+FIELD_5,Division
+FIELD_6,Homicide_Type
+FIELD_7,Occurrence_Date
+FIELD_8,Hood_ID
+FIELD_9,Neighbourhood
+FIELD_10,Lat
+FIELD_11,Long
+FIELD_12,ObjectId
+geometry,geometry
