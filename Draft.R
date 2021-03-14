@@ -11,53 +11,59 @@ library(spdep)
 library(plotly)
 require(rgdal)
 
-CMBD<- read.dbf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/Toronto_Ward.dbf")
 
-
-Homicide <- Homicide_Data
+# Load .csv file
 Variables <- Ward
 Variables$SCODE_NAME <- as.factor(Variables$SCODE_NAME)
 
-Homicide%>%
-  ggplot(aes(x = Longitude, y = Latitude, colour = Homicide_Type)) +
-  geom_point()
-
-
 # Load shapefile
 
-shapename <- read_sf('~/path/to/file.shp')
-
-# Read shapefile
-
-shape <- readOGR(dsn = ".", layer = "SHAPEFILE")
-
-shape <- readOGR("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/data/SpatStat/Homicide Data.shp")
-wards44 <- readOGR("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
-
-# Convert the shapefile to a datafram
-
-wards44.sf <- st_as_sf(x=wards44, crs=4326, bbox=c("x","y"))
-summary(wards44.sf)
+wards44 <- read_sf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
 
 # Merge wards shapefile to variables table
 
-Toronto_W <- merge(x = wards44.sf, y = Variables, by = "SCODE_NAME")
+Toronto_W <- merge(x = wards44, y = Variables, by = "SCODE_NAME")
 summary(Toronto_W)
-  
-# Plot variable
 
-p <- ggplot(data = Toronto_W, aes(x = x, y = y, color = Income)) + 
-  geom_point(shape = 17, size = 5) +
-  coord_fixed()
-ggplotly(p)
+# Plot Population
 
-homicides.sf <- st_as_sf(x=shape, crs=4326, coords=c("coords.x1","coords.x2"))
+ggplot(Toronto_W) + 
+  geom_sf(aes(fill = cut_number(`Population (census 2016)`, 5)), color = NA, size = 0.1) +
+  scale_fill_brewer(palette = "YlOrRd") +
+  coord_sf() +
+  labs(fill = "Population")
+
+# Plot Population Density
+
+pop_den.map <- ggplot(Toronto_W) + 
+  geom_sf(aes(fill = cut_number(`Density (people/ hectare)`, 5)), color = "white", size = 0.1) +
+  scale_fill_brewer(palette = "YlOrRd") +
+  labs(fill = "Pop Density")
+pop_den.map
+
+
+# Convert Toronto_W to a spatial polygons dataframe
+
+Toronto_W.sp <- as(Toronto_W, "Spatial")
+Toronto_W.nb <- poly2nb(pl = Toronto_W.sp, queen = TRUE)
+summary(Toronto_W.nb)
 
 
 
 
 
+#homicides.sf <- st_as_sf(x=shape, crs=4326, coords=c("coords.x1","coords.x2"))
+#CMBD<- read.dbf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/Toronto_Ward.dbf")
+#Homicide <- Homicide_Data
+#Homicide%>%
+  #ggplot(aes(x = Longitude, y = Latitude, colour = Homicide_Type)) +
+  #geom_point()
 
-Wards_CT.sp <- as(wards44.sf, "Spatial")
-Wards_CT.nb <- poly2nb(pl = Wards_CT.sp, queen = TRUE)
-summary(Wards_CT.nb)
+# Convert the shapefile to a datafram
+
+#wards44.sf <- st_as_sf(x=wards44, crs=4326, bbox=c("x","y"))
+#summary(wards44.sf)
+
+# Read shapefile
+
+#wards44 <- readOGR("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
