@@ -1,40 +1,57 @@
-
 # Load library
-library('sf')
+
+library(sf)
 library(tidyverse)
-library(plotly)
-library(cartogram)
-library(gridExtra)
-library(geog4ga3)
-library(foreign)
 library(spdep)
-library(plotly)
+
+#library(plotly)
+#library(cartogram)
+#library(gridExtra)
+#library(geog4ga3)
+#library(foreign)
+#library(plotly)
 #require(rgdal)
 
 
-# Load .csv file
-Variables <- Ward
-Variables$SCODE_NAME <- as.factor(Variables$SCODE_NAME)
+## Merge .csv files
+
+updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
 
 # Load shapefile
 
 wards44 <- read_sf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
 
-# Merge wards shapefile to variables table
+# Merge wards shapefile to updatedData
 
-Toronto_W <- merge(x = wards44, y = Variables, by = "SCODE_NAME")
-summary(Toronto_W)
+Toronto_Data <- merge(x = wards44, y = updatedData, by = "SCODE_NAME")
 
-Toronto_W%>%
-  mutate()
+# Plot Violent Crime
 
-# Plot Population
-
-ggplot(Toronto_W) + 
-  geom_sf(aes(fill = cut_number(`Population (census 2016)`, 5)), color = NA, size = 0.1) +
+ggplot(Toronto_Data) + 
+  geom_sf(aes(fill = cut_number(NONVIOLENTC, 5)), color = NA, size = 0.1) +
   scale_fill_brewer(palette = "YlOrRd") +
   coord_sf() +
-  labs(fill = "Population")
+  labs(fill = "Non-Violent Crime")
+
+
+
+summary(Toronto_Data)
+
+
+Toronto_Data.sp <- as(Toronto_Data, "Spatial")
+Toronto_Data.w <- nb2listw(poly2nb(pl = Toronto_Data.sp))
+
+mp <- moran.plot(Toronto_Data$NONVIOLENTC, Toronto_Data.w, xlab = "Non-Violent Crime", ylab = "Lagged Non-Violent Crime")
+
+
+
+
+
+
+
+
+
+
 
 # Plot Population Density
 
