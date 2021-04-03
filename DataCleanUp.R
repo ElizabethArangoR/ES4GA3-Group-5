@@ -10,6 +10,9 @@ library(ggsci)
 #library(plotly)
 library(cartogram)
 library(stargazer)
+install.packages("ggpubr")
+library(ggplot2)
+library(ggpubr)
 # Merge .csv files
 
 updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
@@ -487,4 +490,22 @@ NV + p6 + r6
 # Median Male Income ~ Non violent crimes analysis
 NV + p7 +r7
 
+# Correlation analysis using scatter plots + cor.method = spearman 
 
+NV_POP_spear <- ggscatter(Toronto_Data, x = "POP", y = "NONVIOLENTC",
+                        add = "reg.line", conf.int=TRUE,
+                        cor.coef=TRUE, cor.method= "spearman",
+                        xlab = "Population", ylab = "Non violent crimes")
+plot(NV_POP_spear) #We can see that R = 0.m and p = 0.05
+
+NV_POPDEN_spear <- ggscatter(Toronto_Data, x = "DEN", y = "NONVIOLENTC",
+                          add = "reg.line", conf.int=TRUE,
+                          cor.coef=TRUE, cor.method= "spearman",
+                          xlab = "Population Density", ylab = "Non violent crimes")
+plot(NV_POPDEN_spear) #We can see that R = 0.17. and p=0.27
+
+NV_UNEMP_spear <- ggscatter(Toronto_Data, x = "UNEMPLOY", y = "NONVIOLENTC",
+                             add = "reg.line", conf.int=TRUE,
+                             cor.coef=TRUE, cor.method= "spearman",
+                             xlab = "Unemployment Rate (%)", ylab = "Non violent crimes")
+plot(NV_UNEMP_spear) #We can see that R = -0.018, and p = 0.91
