@@ -3,6 +3,8 @@
 library(sf)
 library(tidyverse)
 library(spdep)
+library(gridExtra)
+library(ggsci)
 
 #library(plotly)
 #library(cartogram)
@@ -25,7 +27,33 @@ wards44 <- read_sf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToron
 
 Toronto_Data <- merge(x = wards44, y = updatedData, by = "SCODE_NAME")
 
-# Plot Violent Crime
+# Study area
+
+# 44-Ward Model (214-2018) (Retrieved from: https://www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/ward-profiles/44-ward-model/)
+
+ggplot() +
+  geom_sf(data = Toronto_Data,
+          color = "white", 
+          fill = "gray") + 
+  theme_void()+
+  theme(panel.grid.major = element_line(colour = 'transparent'))
+
+# General pattern of demographic variables
+
+p1 <- ggplot(Toronto_Data) + 
+  geom_sf(aes(fill = cut_number(NONVIOLENTC, 5)), color = NA, size = 0.1) +
+  scale_fill_brewer(palette = "YlOrRd") +
+  coord_sf() +
+  labs(fill = "Non-Violent Crime")+
+  theme_bw()
+
+
+grid.arrange(p1, p2, p3, p4, ncol = 2)
+
+
+
+
+# Crime in Toronto (Non-Violent Crime)
 
 ggplot(Toronto_Data) + 
   geom_sf(aes(fill = cut_number(NONVIOLENTC, 5)), color = NA, size = 0.1) +

@@ -1,7 +1,7 @@
 ---
 title: "The Effects of Education and Income on Opioid Use in Kentucky"
 #subtitle: "A subtitle"
-thanks: "Paper submitted to complete the requirements of ENVSOCTY 4GA3 Applied Spatial Statistics; with additional edits by Antonio Paez for this version."
+thanks: "PREDICTING POTENTIAL CRIME HOTSPOTS: Analyzing the effects of socioeconomic factors on crime rates in the City of Toronto, with an emphasis on unemployment due to COVID-19 lockdowns."
 author:
 - name: Elizabeth Arango Ruda
   student_number: 400348183
@@ -15,7 +15,7 @@ author:
   student_number: 4400185070
 subject: "ENVSOCTY 4GA3"
 abstract: "This paper reports our analysis of opioid prescriptions in Kentucky, USA, and its relationship with income and education at the level of counties. Data were obtained from the Washington Post database and the US Census."
-keywords: "opioids, education, income, spatial analysis"
+keywords: "crime, education, income, spatial analysis"
 date: "2/24/2021"
 output:
   pdf_document:
@@ -174,6 +174,7 @@ KY_AVG_Per <- KY %>%
   left_join(KY_shape, by = "COUNTYFP") %>% # join to the sf object
   st_as_sf() # convert to sf
 ```
+
 
 ```{r map-mean-per-person-dose, echo=FALSE, fig.cap={"\\label{fig:mean-annual-dosage}Mean annual opioid pills per person by county in Kentucky, USA (9-year average, 2006-2014)"}}
 #Map the average dosage unit per person per year from 2006-2014.
