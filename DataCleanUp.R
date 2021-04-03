@@ -7,11 +7,7 @@ library(gridExtra)
 library(ggsci)
 #library(plotly)
 library(cartogram)
-#library(geog4ga3)
-
-#library(plotly)
-
-
+library(stargazer)
 # Merge .csv files
 
 updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
@@ -297,12 +293,12 @@ Non_violent.lm <- localmoran(Toronto_Data$NONVIOLENTC, Toronto_Data.w)
 summary(Non_violent.lm)
 
 
-# Regression
+# Regression analysis of population and non-violent crime
 
-model1 <- lm(formula = NONVIOLENTC ~ `Population (census 2016)`, data = Toronto_Data)
+model1 <- lm(formula = NONVIOLENTC ~ POP, data = Toronto_Data)
 summary(model1) 
 
-ggplot(data = Toronto_Data, aes(x = `Population (census 2016)`, y = NONVIOLENTC)) + 
+ggplot(data = Toronto_Data, aes(x = POP, y = NONVIOLENTC)) + 
   geom_point() +
   geom_abline(slope = model1$coefficients[2], # Recall that `geom_abline()` draws a line with intercept and slope as defined. Here the line is drawn using the coefficients of the regression model we estimated above. 
               intercept = model1$coefficients[1], 
@@ -311,5 +307,137 @@ ggplot(data = Toronto_Data, aes(x = `Population (census 2016)`, y = NONVIOLENTC)
   geom_hline(yintercept = 0)
 
 
+stargazer(model1,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r1 <- ggplot(data = Toronto_Data, 
+       aes(x = POP, 
+           y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Population") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
 
 
+
+# Regression analysis of density and non-violent crime
+
+model2 <- lm(formula = NONVIOLENTC ~ DEN, data = Toronto_Data)
+summary(model2) 
+
+ggplot(data = Toronto_Data, aes(x = DEN, y = NONVIOLENTC)) + 
+
+stargazer(model2,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r2 <-ggplot(data = Toronto_Data, 
+       aes(x = DEN, 
+           y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Density (people/hectare)") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+# Regression analysis of population and non-violent crime
+
+model3 <- lm(formula = NONVIOLENTC ~ UNEMPLOY, data = Toronto_Data)
+summary(model3) 
+
+stargazer(model3,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r3 <-ggplot(data = Toronto_Data, 
+            aes(x = UNEMPLOY, 
+                y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Density (people/hectare)") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+# Regression analysis of single parent household and non-violent crime
+
+model4 <- lm(formula = NONVIOLENTC ~ SINPARHOU, data = Toronto_Data)
+summary(model4) 
+
+stargazer(model4,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r4 <-ggplot(data = Toronto_Data, 
+            aes(x = SINPARHOU, 
+                y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Single Parent Household (%)") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+# Regression analysis of single parent household and non-violent crime
+
+model5 <- lm(formula = NONVIOLENTC ~ HOUSINCOM, data = Toronto_Data)
+summary(model5) 
+
+stargazer(model5,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r5 <-ggplot(data = Toronto_Data, 
+            aes(x = HOUSINCOM, 
+                y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Average Household Income ($)") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+# Regression analysis of average household income and non-violent crime
+
+model5 <- lm(formula = NONVIOLENTC ~ UNEMPLOY, data = Toronto_Data)
+summary(model5) 
+
+stargazer(model5,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r5 <-ggplot(data = Toronto_Data, 
+            aes(x = HOUSINCOM, 
+                y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("Average Household Income ($)") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+# Regression analysis of average household income and non-violent crime
+
+model6 <- lm(formula = NONVIOLENTC ~ UNEMPLOY, data = Toronto_Data)
+summary(model6) 
+
+stargazer(model6,
+          header = FALSE,
+          title = "Non-Violent Crime per ward regressed on mean household income")
+
+r6 <-ggplot(data = Toronto_Data, 
+            aes(x = NOHIGHSCHO, 
+                y = NONVIOLENTC))+
+  geom_point() +
+  geom_smooth(formula = y ~ x,
+              method = "lm") +
+  xlab("15+ without high school dip") +
+  ylab("Non-Violent Crime")+
+  theme_bw()
+
+
+grid.arrange(r1, r2, r3, r4, r5, r6, nrow = 3, ncol = 2)
