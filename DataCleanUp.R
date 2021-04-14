@@ -36,66 +36,12 @@ Toronto_Data <- Toronto_Data%>%
 
 summary(Toronto_Data)
 
+Toronto_Data <- Toronto_Data%>%
+  mutate(NVRate = (NONVIOLENTC/POP)*1000)
+
 # Study area
 
 # 44-Ward Model (214-2018) (Retrieved from: https://www.toronto.ca/city-government/data-research-maps/neighbourhoods-communities/ward-profiles/44-ward-model/)
-
-ggplot() +
-  geom_sf(data = Toronto_Data,
-          color = "white", 
-          fill = "gray") + 
-  theme_void()+
-  theme(panel.grid.major = element_line(colour = 'transparent'))
-
-# General pattern of demographic variables
-
-p1 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(POP, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Population")+
-  theme_void()
-
-p2 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(DEN, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Density (people/hectare")+
-  theme_void()
-
-p3 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(UNEMPLOY, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Unemploymen rate (%)")+
-  theme_void()
-
-p4 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(SINPARHOU, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Single Parent Household (%)")+
-  theme_void()
-
-p5 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(HOUSINCOM, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Average Household Income ($)")+
-  theme_void()
-
-p6 <- ggplot(Toronto_Data) + 
-  geom_sf(aes(fill = cut_number(MEDMALINCO, 6)), color = NA, size = 0.1) +
-  scale_fill_brewer(palette = "Reds") +
-  coord_sf() +
-  labs(fill = "Median Male income ($)")+
-  theme_void()
-
-
-
-grid.arrange(p1, p2, p3, p4, p5, p6, nrow = 3, ncol = 2)
-
-
 
 p1 <- ggplot(Toronto_Data) + 
   geom_sf() +
@@ -155,7 +101,7 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 3, ncol = 2)
 
 NV <-ggplot() + 
   geom_sf(data = Toronto_Data) + 
-  aes(fill = NONVIOLENTC) +
+  aes(fill = NVRate) +
   scale_fill_gradientn(colors = viridis::viridis(20))+
   labs(fill = "Non-Violent Crime")+
   theme_void()
@@ -166,7 +112,7 @@ plot(NV)
 
 crime_cartogram <- cartogram_cont(Toronto_Data, weight = "NONVIOLENTC")
 
-ggplot(crime_cartogram, aes(fill = NONVIOLENTC)) +
+ggplot(crime_cartogram, aes(fill = NVRate)) +
   geom_sf(color = "white") + 
   scale_fill_gradientn(colors = viridis::viridis(20))+
   labs(fill = "Non-Violent Crime")+
@@ -176,45 +122,46 @@ ggplot(crime_cartogram, aes(fill = NONVIOLENTC)) +
 
 
 
-# Convert dataframe file to SpatialPolygonsDataFrame
+# Convert dataframe file to SpatialPolygonsDataFrame + Creating spatial weights matrix
 
 Toronto_Data.sp <- as(Toronto_Data, "Spatial")
+Toronto_Data.nb <- poly2nb(pl = Toronto_Data.sp, queen = TRUE)
 
 # Empirical Distribution of non-violent crime per ward and five simulated landscapes
 
-Toronto_Data.w <- nb2listw(poly2nb(pl = Toronto_Data.sp))
+Toronto_Data.w <- nb2listw(Toronto_Data.nb)
 
 # The function `lag.listw()` takes as argument the population density by census tracts in Hamilton, and calculates the moving average, with the "moving" part given by the local neighborhoods around each zone as defined by `Hamilton_CT.w`
 
 Toronto_Data <- Toronto_Data %>%
-  mutate(sma = lag.listw(Toronto_Data.w, NONVIOLENTC))
+  mutate(sma = lag.listw(Toronto_Data.w, NVRate))
 
 
 # Spatial Moving Average Simulation
 
 # Null landscape/simulation #1
 
-simulation_1 <- sample(Toronto_Data$NONVIOLENTC)
+simulation_1 <- sample(Toronto_Data$NVRate)
 simulation_1.sma <- lag.listw(Toronto_Data.w, simulation_1)
 
 # Null landscape/simulation #2
 
-simulation_2 <- sample(Toronto_Data$NONVIOLENTC)
+simulation_2 <- sample(Toronto_Data$NVRate)
 simulation_2.sma <- lag.listw(Toronto_Data.w, simulation_2)
 
 # Null landscape/simulation #3
 
-simulation_3 <- sample(Toronto_Data$NONVIOLENTC)
+simulation_3 <- sample(Toronto_Data$NVRate)
 simulation_3.sma <- lag.listw(Toronto_Data.w, simulation_3)
 
 # Null landscape/simulation #4
 
-simulation_4 <- sample(Toronto_Data$NONVIOLENTC)
+simulation_4 <- sample(Toronto_Data$NVRate)
 simulation_4.sma <- lag.listw(Toronto_Data.w, simulation_4)
 
 # Null landscape/simulation #5
 
-simulation_5 <- sample(Toronto_Data$NONVIOLENTC)
+simulation_5 <- sample(Toronto_Data$NVRate)
 simulation_5.sma <- lag.listw(Toronto_Data.w, simulation_5)
 
 # Adding the simulated landscapes to the `sf` dataframe.
@@ -234,7 +181,7 @@ Toronto_Data$simulation_4.sma <- simulation_4.sma
 Toronto_Data$simulation_5.sma <- simulation_5.sma
 
 Toronto_Datasm <- Toronto_Data%>% 
-  transmute(observed = NONVIOLENTC, 
+  transmute(observed = NVRate, 
             simulation_1,
             simulation_2,
             simulation_3,
@@ -291,29 +238,45 @@ ggplot(data = Toronto_Datasm,
 
 Toronto_Data <- Toronto_Data %>% 
   # Modify values in dataframe
-  mutate(Rate_z = NONVIOLENTC - mean(NONVIOLENTC), # Substract the mean, so that the variable now is deviations from the mean 
+  mutate(Rate_z = NVRate - mean(NVRate), # Substract the mean, so that the variable now is deviations from the mean 
          SMA_z = lag.listw(Toronto_Data.w, Rate_z)) 
 
-mc <- moran.test(Toronto_Data$NONVIOLENTC, Toronto_Data.w)
+mc <- moran.test(Toronto_Data$NVRate, Toronto_Data.w)
 
 
 # Moran's I and Moran's Scatterplot 
 
-mp <- moran.plot(Toronto_Data$NONVIOLENTC, 
+mp <- moran.plot(Toronto_Data$NVRate, 
                  Toronto_Data.w, 
                  xlab = "Non-Violent Crime", 
                  ylab = "Lagged Non-Violent Crime")
 
-Non_violent.lm <- localmoran(Toronto_Data$NONVIOLENTC, Toronto_Data.w)
+mp1 <- moran.plot(Toronto_Data$POP, Toronto_Data.w)
+plot(mp1)
+mp2 <- moran.plot(Toronto_Data$DEN, Toronto_Data.w)
+plot(mp2)
+mp3 <- moran.plot(Toronto_Data$UNEMPLOY, Toronto_Data.w)
+plot(mp3)
+mp4 <- moran.plot(Toronto_Data$SINPARHOU, Toronto_Data.w)
+plot(mp4)
+mp5 <- moran.plot(Toronto_Data$HOUSINCOM, Toronto_Data.w)
+plot(mp5)
+mp6 <- moran.plot(Toronto_Data$NOHIGHSCHO, Toronto_Data.w)
+plot(mp6)
+mp7 <- moran.plot(Toronto_Data$MEDMALINCO, Toronto_Data.w)
+plot(mp7)
+
+
+Non_violent.lm <- localmoran(Toronto_Data$NVRate, Toronto_Data.w)
 summary(Non_violent.lm)
 
 
 # Regression analysis of population and non-violent crime
 
-model1 <- lm(formula = NONVIOLENTC ~ POP, data = Toronto_Data)
+model1 <- lm(formula = NVRate ~ POP, data = Toronto_Data)
 summary(model1) 
 
-ggplot(data = Toronto_Data, aes(x = POP, y = NONVIOLENTC)) + 
+ggplot(data = Toronto_Data, aes(x = POP, y = NVRate)) + 
   geom_point() +
   geom_abline(slope = model1$coefficients[2], # Recall that `geom_abline()` draws a line with intercept and slope as defined. Here the line is drawn using the coefficients of the regression model we estimated above. 
               intercept = model1$coefficients[1], 
@@ -324,26 +287,26 @@ ggplot(data = Toronto_Data, aes(x = POP, y = NONVIOLENTC)) +
 
 stargazer(model1,
           header = FALSE,
-          title = "Non-Violent Crime per ward regressed on population")
+          title = "Non-Violent Crime Rate per ward regressed on population")
 
 r1 <- ggplot(data = Toronto_Data, 
              aes(x = POP, 
-                 y = NONVIOLENTC))+
+                 y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Population") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r1)
 
 # Regression analysis of density and non-violent crime
 
-model2 <- lm(formula = NONVIOLENTC ~ DEN, data = Toronto_Data)
+model2 <- lm(formula = NVRate ~ DEN, data = Toronto_Data)
 summary(model2) 
 
-ggplot(data = Toronto_Data, aes(x = DEN, y = NONVIOLENTC)) + 
+ggplot(data = Toronto_Data, aes(x = DEN, y = NVRate)) + 
   
   stargazer(model2,
             header = FALSE,
@@ -351,61 +314,61 @@ ggplot(data = Toronto_Data, aes(x = DEN, y = NONVIOLENTC)) +
 
 r2 <-ggplot(data = Toronto_Data, 
             aes(x = DEN, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Density (people/hectare)") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r2)
 
 # Regression analysis of unemployment rate and non-violent crime
 
-model3 <- lm(formula = NONVIOLENTC ~ UNEMPLOY, data = Toronto_Data)
+model3 <- lm(formula = NVRate ~ UNEMPLOY, data = Toronto_Data)
 summary(model3) 
 
 stargazer(model3,
           header = FALSE,
-          title = "Non-Violent Crime per ward regressed on unemplotment rate")
+          title = "Non-Violent Crime Rate per ward regressed on unemplotment rate")
 
 r3 <-ggplot(data = Toronto_Data, 
             aes(x = UNEMPLOY, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Unemployment Rate") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r3)
 
 # Regression analysis of single parent household and non-violent crime
 
-model4 <- lm(formula = NONVIOLENTC ~ SINPARHOU, data = Toronto_Data)
+model4 <- lm(formula = NVRate ~ SINPARHOU, data = Toronto_Data)
 summary(model4) 
 
 stargazer(model4,
           header = FALSE,
-          title = "Non-Violent Crime per ward regressed on mean household income")
+          title = "Non-Violent Crime rate per ward regressed on mean household income")
 
 r4 <-ggplot(data = Toronto_Data, 
             aes(x = SINPARHOU, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Single Parent Household (%)") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r4)
 
 # Regression analysis of household income and non-violent crime
 
-model5 <- lm(formula = NONVIOLENTC ~ HOUSINCOM, data = Toronto_Data)
+model5 <- lm(formula = NVRate ~ HOUSINCOM, data = Toronto_Data)
 summary(model5) 
 
 stargazer(model5,
@@ -414,19 +377,19 @@ stargazer(model5,
 
 r5 <-ggplot(data = Toronto_Data, 
             aes(x = HOUSINCOM, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Average Household Income ($)") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r5)
 
 # Regression analysis of 15+ without high school diploma and non-violent crime
 
-model6 <- lm(formula = NONVIOLENTC ~ NOHIGHSCHO, data = Toronto_Data)
+model6 <- lm(formula = NVRate ~ NOHIGHSCHO, data = Toronto_Data)
 summary(model6) 
 
 stargazer(model6,
@@ -435,19 +398,19 @@ stargazer(model6,
 
 r6 <-ggplot(data = Toronto_Data, 
             aes(x = NOHIGHSCHO, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("15+ without high school dip") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r6)
 
 # Regression analysis of median male income and non-violent crime
 
-model7 <- lm(formula = NONVIOLENTC ~ MEDMALINCO, data = Toronto_Data)
+model7 <- lm(formula = NVRate ~ MEDMALINCO, data = Toronto_Data)
 summary(model7) 
 
 stargazer(model7,
@@ -456,12 +419,12 @@ stargazer(model7,
 
 r7 <-ggplot(data = Toronto_Data, 
             aes(x = MEDMALINCO, 
-                y = NONVIOLENTC))+
+                y = NVRate))+
   geom_point() +
   geom_smooth(formula = y ~ x,
               method = "lm") +
   xlab("Median Male Income ($)") +
-  ylab("Non-Violent Crime")+
+  ylab("Non-Violent Crime Rate")+
   theme_bw()
 
 plot(r7)
@@ -470,42 +433,69 @@ plot(r7)
 grid.arrange(r1, r2, r3, r4, r5, r6, r7, nrow = 3, ncol = 2)
 
 # Population ~ Non violent crimes analysis 
-NV + p1 + r1 
+NV + p1 + r1 + mp1
 
 # Pop density ~ Non violent crimes analysis 
-NV + p2 + r2
+NV + p2 + r2 + mp2
 
 # Unemployment ~ Non violent crimes analysis 
-NV + p3 +r3
+NV + p3 +r3 + mp3
 
 # Single parent household ~ Non violent crimes analysis
-NV + p4 + r4
+NV + p4 + r4 + mp4
 
 # Average household income ~ Non violent crimes analysis
-NV + p5 +r5
+NV + p5 +r5 +mp5
 
 # No high school diploma ~ Non violent crimes analysis
-NV + p6 + r6
+NV + p6 + r6 + mp6
 
 # Median Male Income ~ Non violent crimes analysis
-NV + p7 +r7
+NV + p7 +r7 +mp7
 
-# Correlation analysis using scatter plots + cor.method = spearman 
+# Correlation analysis using scatter plots + cor.method = spearman
 
-NV_POP_spear <- ggscatter(Toronto_Data, x = "POP", y = "NONVIOLENTC",
+NV_POP_spear <- ggscatter(Toronto_Data, x = "POP", y = "NVRate",
                         add = "reg.line", conf.int=TRUE,
                         cor.coef=TRUE, cor.method= "spearman",
                         xlab = "Population", ylab = "Non violent crimes")
-plot(NV_POP_spear) #We can see that R = 0.m and p = 0.05
+plot(NV_POP_spear) #We can see that R = 0.3 and p = 0.05
 
-NV_POPDEN_spear <- ggscatter(Toronto_Data, x = "DEN", y = "NONVIOLENTC",
+NV_POPDEN_spear <- ggscatter(Toronto_Data, x = "DEN", y = "NVRate",
                           add = "reg.line", conf.int=TRUE,
                           cor.coef=TRUE, cor.method= "spearman",
                           xlab = "Population Density", ylab = "Non violent crimes")
 plot(NV_POPDEN_spear) #We can see that R = 0.17. and p=0.27
 
-NV_UNEMP_spear <- ggscatter(Toronto_Data, x = "UNEMPLOY", y = "NONVIOLENTC",
+NV_UNEMP_pear <- ggscatter(Toronto_Data, x = "UNEMPLOY", y = "NVRate",
                              add = "reg.line", conf.int=TRUE,
                              cor.coef=TRUE, cor.method= "spearman",
                              xlab = "Unemployment Rate (%)", ylab = "Non violent crimes")
-plot(NV_UNEMP_spear) #We can see that R = -0.018, and p = 0.91
+plot(NV_UNEMP_spear)
+
+NV_SINPARHOU_spear <- ggscatter(Toronto_Data, x = "SINPARHOU", y = "NVRate",
+                            add = "reg.line", conf.int=TRUE,
+                            cor.coef=TRUE, cor.method= "spearman",
+                            xlab = "Single Parent Household (%)", ylab = "Non violent crimes")
+plot(NV_SINPARHOU_spear)
+
+NV_EDU_spear <- ggscatter(Toronto_Data, x = "NOHIGHSCHO", y = "NVRate",
+                                add = "reg.line", conf.int=TRUE,
+                                cor.coef=TRUE, cor.method= "spearman",
+                                xlab = "15+ No highschool diploma", ylab = "Non violent crimes")
+plot(NV_EDU_spear)
+
+NV_AVEINC_spear <- ggscatter(Toronto_Data, x = "HOUSINCOM", y = "NVRate",
+                                add = "reg.line", conf.int=TRUE,
+                                cor.coef=TRUE, cor.method= "spearman",
+                                xlab = "Average household income", ylab = "Non violent crimes")
+plot(NV_HouseIncome_spear)
+
+NV_MED_spear <- ggscatter(Toronto_Data, x = "MEDMALINCO", y = "NVRate",
+                                add = "reg.line", conf.int=TRUE,
+                                cor.coef=TRUE, cor.method= "spearman",
+                                xlab = "Medium Male Income ($)", ylab = "Non violent crimes")
+plot(NV_MED_spear)
+
+
+# Double check SMA variables (Change number of simulations?)
