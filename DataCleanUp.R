@@ -497,5 +497,10 @@ NV_MED_spear <- ggscatter(Toronto_Data, x = "MEDMALINCO", y = "NVRate",
                                 xlab = "Medium Male Income ($)", ylab = "Non violent crimes")
 plot(NV_MED_spear)
 
+# Multivariate regression model
 
-# Double check SMA variables (Change number of simulations?)
+Multi1 <- lm(NVRate ~ DEN + UNEMPLOY + SINPARHOU + NOHIGHSCHO + HOUSINCOM + MEDMALINCO, Toronto_Data)
+
+
+
+
