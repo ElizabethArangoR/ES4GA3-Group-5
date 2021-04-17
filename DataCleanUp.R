@@ -1,6 +1,5 @@
 # Load Required Library
 
-install.packages('patchwork')
 library(patchwork)
 library(sf)
 library(tidyverse)
@@ -13,6 +12,7 @@ library(stargazer)
 install.packages("ggpubr")
 library(ggplot2)
 library(ggpubr)
+library(geog4ga3)
 # Merge .csv files
 
 updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
@@ -20,7 +20,7 @@ updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
 # Load shapefile
 
 wards44 <- read_sf("C:/Users/sooah/Documents/ES4GA3-Group-5-main/WardToronto.shp")
-
+wards44 <- read_sf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
 # Merge wards shapefile to updatedData
 
 Toronto_Data <- merge(x = wards44, y = updatedData, by = "SCODE_NAME")
@@ -148,7 +148,7 @@ p7 <- ggplot(Toronto_Data) +
   theme_void()
 
 
-grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 3, ncol = 2)
+grid.arrange(p1, p2, p3, p4, p5, p6, p7, nrow = 4, ncol = 2)
 
 
 # Plot Non-Violent Crime
@@ -189,6 +189,9 @@ Toronto_Data.w <- nb2listw(poly2nb(pl = Toronto_Data.sp))
 Toronto_Data <- Toronto_Data %>%
   mutate(sma = lag.listw(Toronto_Data.w, NONVIOLENTC))
 
+# Local Moran Maps
+
+localmoran.map( Toronto_Data, Toronto_Data.w, "NONVIOLENTC", by = "SCODE_NAME")
 
 # Spatial Moving Average Simulation
 
@@ -467,7 +470,7 @@ r7 <-ggplot(data = Toronto_Data,
 plot(r7)
 
 
-grid.arrange(r1, r2, r3, r4, r5, r6, r7, nrow = 3, ncol = 2)
+grid.arrange(r1, r2, r3, r4, r5, r6, r7, nrow = 4, ncol = 2)
 
 # Population ~ Non violent crimes analysis 
 NV + p1 + r1 
@@ -496,7 +499,7 @@ NV_POP_spear <- ggscatter(Toronto_Data, x = "POP", y = "NONVIOLENTC",
                         add = "reg.line", conf.int=TRUE,
                         cor.coef=TRUE, cor.method= "spearman",
                         xlab = "Population", ylab = "Non violent crimes")
-plot(NV_POP_spear) #We can see that R = 0.m and p = 0.05
+plot(NV_POP_spear) #We can see that R = 0.3m and p = 0.05
 
 NV_POPDEN_spear <- ggscatter(Toronto_Data, x = "DEN", y = "NONVIOLENTC",
                           add = "reg.line", conf.int=TRUE,
@@ -509,3 +512,11 @@ NV_UNEMP_spear <- ggscatter(Toronto_Data, x = "UNEMPLOY", y = "NONVIOLENTC",
                              cor.coef=TRUE, cor.method= "spearman",
                              xlab = "Unemployment Rate (%)", ylab = "Non violent crimes")
 plot(NV_UNEMP_spear) #We can see that R = -0.018, and p = 0.91
+
+
+
+
+
+
+
+
