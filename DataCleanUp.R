@@ -21,7 +21,7 @@ updatedData <- merge(x = Demographic, y = CRIME, by = "SCODE_NAME")
 # Load shapefile
 
 wards44 <- read_sf("C:/Users/sooah/Documents/ES4GA3-Group-5-main/WardToronto.shp")
-wards44 <- read_sf("C:/Users/Elizabeth/Documents/GitHub/ES4GA3-Group-5/WardToronto.shp")
+
 # Merge wards shapefile to updatedData
 
 Toronto_Data <- merge(x = wards44, y = updatedData, by = "SCODE_NAME")
@@ -97,13 +97,13 @@ grid.arrange(p1, p2, p3, p4, p5, p6, p7, ncol = 2)
 
 plot_grid(p1, p2, p3, p4, p5, p6, p7, ncol = 2, align = 'v')
 
-# Plot Non-Violent Crime
+# Plot Non-Violent Crime Rate
 
 NV <-ggplot() + 
   geom_sf(data = Toronto_Data) + 
   aes(fill = NVRate) +
   scale_fill_gradientn(colors = viridis::viridis(20))+
-  labs(fill = "Non-Violent Crime")+
+  labs(fill = "Non-Violent Crime Rate")+
   theme_void()
 
 plot(NV)
@@ -255,44 +255,58 @@ mp <- moran.plot(Toronto_Data$NVRate,
                  ylab = "Lagged Non-Violent Crime Rate")
 
 mp8 <- moran.plot(Toronto_Data$NONVIOLENTC, 
-                 Toronto_Data.w, 
-                 xlab = "Non-Violent Crime", 
-                 ylab = "Lagged Non-Violent Crime")
+                  Toronto_Data.w, 
+                  xlab = "Non-Violent Crime", 
+                  ylab = "Lagged Non-Violent Crime")
 
 mp1 <- moran.plot(Toronto_Data$POP, 
                   Toronto_Data.w,
                   xlab = "Population", 
                   ylab = "Lagged Population")
+mp1.test <- moran.test(Toronto_Data$POP, Toronto_Data.w)
+mp1.test
 
 mp2 <- moran.plot(Toronto_Data$DEN, 
                   Toronto_Data.w,
                   xlab = "Density (people/hectare)", 
                   ylab = "Lagged Density (people/hectare)")
+mp2.test <- moran.test(Toronto_Data$DEN, Toronto_Data.w)
+mp2.test
 
 mp3 <- moran.plot(Toronto_Data$UNEMPLOY, 
                   Toronto_Data.w,
                   xlab = "Unemployment Rate", 
                   ylab = "Lagged Unemployment Rate")
+mp3.test <- moran.test(Toronto_Data$UNEMPLOY, Toronto_Data.w)
+mp3.test
 
 mp4 <- moran.plot(Toronto_Data$SINPARHOU, 
                   Toronto_Data.w,
                   xlab = "Single Parent Household (%)", 
                   ylab = "Lagged Unemployment Rate")
+mp4.test <- moran.test(Toronto_Data$SINPARHOU, Toronto_Data.w)
+mp4.test
 
 mp5 <- moran.plot(Toronto_Data$HOUSINCOM, 
                   Toronto_Data.w,
                   xlab = "Average Household Income ($)", 
                   ylab = "Lagged Average Household Income ($)")
+mp5.test <- moran.test(Toronto_Data$HOUSINCOM, Toronto_Data.w)
+mp5.test
 
 mp6 <- moran.plot(Toronto_Data$NOHIGHSCHO, 
                   Toronto_Data.w,
                   xlab = "15+ Without High School Diploma", 
                   ylab = "Lagged 15+ Without High School Diploma")
+mp6.test <- moran.test(Toronto_Data$NOHIGHSCHO, Toronto_Data.w)
+mp6.test
 
 mp7 <- moran.plot(Toronto_Data$MEDMALINCO, 
                   Toronto_Data.w,
                   xlab = "Median Male Income ($)", 
                   ylab = "Lagged Median Male Income ($)")
+mp7.test <- moran.test(Toronto_Data$MEDMALINCO, Toronto_Data.w)
+mp7.test
 
 Non_violent.lm <- localmoran(Toronto_Data$NVRate, Toronto_Data.w)
 summary(Non_violent.lm)
@@ -474,8 +488,12 @@ r7 <-ggplot(data = Toronto_Data,
             aes(x = MEDMALINCO, 
                 y = NVRate))+
   geom_point() +
-  geom_smooth(formula = y ~ x,
+  geom_smooth(formula = formula,
               method = "lm") +
+  stat_regline_equation(
+    aes(label =  paste(..eq.label.., ..adj.rr.label.., sep = "~~~~")),
+    formula = formula 
+  ) +
   xlab("Median Male Income ($)") +
   ylab("Non-Violent Crime Rate")+
   theme_bw()
@@ -510,32 +528,27 @@ NV + p7 +r7 +mp7
 # Correlation analysis using scatter plots + cor.method = spearman
 
 NV_POP_spear <- ggscatter(Toronto_Data, x = "POP", y = "NVRate",
-                        add = "reg.line", conf.int=TRUE,
-                        cor.coef=TRUE, cor.method= "spearman",
-                        xlab = "Population", ylab = "Non violent crimes")
+                          add = "reg.line", conf.int=TRUE,
+                          cor.coef=TRUE, cor.method= "spearman",
+                          xlab = "Population", ylab = "Non violent crimes")
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$POP, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
-<<<<<<< HEAD
-plot(NV_POP_spear) #We can see that R = 0.3m and p = 0.05
-=======
-plot(NV_POP_spear) #We can see that R = 0.3 and p = 0.05
->>>>>>> 867d5b681d9c0789750b5590d4721fa6306b0cd4
 
 # Correlation analysis using density and non-violent crime rate
 
 NV_POPDEN_spear <- ggscatter(Toronto_Data, x = "DEN", y = "NVRate",
-                          add = "reg.line", conf.int=TRUE,
-                          cor.coef=TRUE, cor.method= "spearman",
-                          xlab = "Population Density", ylab = "Non violent crimes")
+                             add = "reg.line", conf.int=TRUE,
+                             cor.coef=TRUE, cor.method= "spearman",
+                             xlab = "Population Density", ylab = "Non violent crimes")
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$DEN, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
@@ -544,74 +557,71 @@ plot(NV_POPDEN_spear) #We can see that R = 0.17. and p=0.27
 # Correlation analysis using unemployment and non-violent crime rate
 
 NV_UNEMP_pear <- ggscatter(Toronto_Data, x = "UNEMPLOY", y = "NVRate",
-                             add = "reg.line", conf.int=TRUE,
-                             cor.coef=TRUE, cor.method= "spearman",
-                             xlab = "Unemployment Rate (%)", ylab = "Non violent crimes")
-<<<<<<< HEAD
-plot(NV_UNEMP_spear) #We can see that R = -0.018, and p = 0.91
+                           add = "reg.line", conf.int=TRUE,
+                           cor.coef=TRUE, cor.method= "spearman",
+                           xlab = "Unemployment Rate (%)", ylab = "Non violent crimes")
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$UNEMPLOY, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
-=======
-plot(NV_UNEMP_spear)
+  plot(NV_UNEMP_spear)
 
 # Correlation analysis using single parent and non-violent crime rate
 
 NV_SINPARHOU_spear <- ggscatter(Toronto_Data, x = "SINPARHOU", y = "NVRate",
-                            add = "reg.line", conf.int=TRUE,
-                            cor.coef=TRUE, cor.method= "spearman",
-                            xlab = "Single Parent Household (%)", ylab = "Non violent crimes")
+                                add = "reg.line", conf.int=TRUE,
+                                cor.coef=TRUE, cor.method= "spearman",
+                                xlab = "Single Parent Household (%)", ylab = "Non violent crimes")
 plot(NV_SINPARHOU_spear)
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$SINPARHOU, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
 # Correlation analysis using non high school and non-violent crime rate
 
 NV_EDU_spear <- ggscatter(Toronto_Data, x = "NOHIGHSCHO", y = "NVRate",
-                                add = "reg.line", conf.int=TRUE,
-                                cor.coef=TRUE, cor.method= "spearman",
-                                xlab = "15+ No highschool diploma", ylab = "Non violent crimes")
+                          add = "reg.line", conf.int=TRUE,
+                          cor.coef=TRUE, cor.method= "spearman",
+                          xlab = "15+ No highschool diploma", ylab = "Non violent crimes")
 plot(NV_EDU_spear)
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$NOHIGHSCHO, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
 # Correlation analysis using house income and non-violent crime rate
 
 NV_AVEINC_spear <- ggscatter(Toronto_Data, x = "HOUSINCOM", y = "NVRate",
-                                add = "reg.line", conf.int=TRUE,
-                                cor.coef=TRUE, cor.method= "spearman",
-                                xlab = "Average household income", ylab = "Non violent crimes")
+                             add = "reg.line", conf.int=TRUE,
+                             cor.coef=TRUE, cor.method= "spearman",
+                             xlab = "Average household income", ylab = "Non violent crimes")
 plot(NV_HouseIncome_spear)
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$HOUSINCOM, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
 # Correlation analysis using medium male income and non-violent crime rate
 
 NV_MED_spear <- ggscatter(Toronto_Data, x = "MEDMALINCO", y = "NVRate",
-                                add = "reg.line", conf.int=TRUE,
-                                cor.coef=TRUE, cor.method= "spearman",
-                                xlab = "Medium Male Income ($)", ylab = "Non violent crimes")
+                          add = "reg.line", conf.int=TRUE,
+                          cor.coef=TRUE, cor.method= "spearman",
+                          xlab = "Medium Male Income ($)", ylab = "Non violent crimes")
 plot(NV_MED_spear)
 
 cor.test(Toronto_Data$NVRate, 
          Toronto_Data$MEDMALINCO, 
-         method = "pearson", 
+         method = "spearman", 
          conf.level = 0.95, 
          data=Toronto_Data)
 
@@ -649,6 +659,7 @@ Bestmodel$anova # Shows final model (NVRate ~ DEN + SINPARHOU + NOHIGHSCHO) - th
 par(mfrow=c(2,2))
 plot(Bestmodel)
 par(mfrow=c(1,1))
+summary(Bestmodel)
 
 
 #The diagnostic plots show the unexplained variance (residuals) across the range of the observed data.
